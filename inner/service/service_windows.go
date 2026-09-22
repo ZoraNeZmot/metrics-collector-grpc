@@ -2,8 +2,7 @@ package service
 
 import (
 	"errors"
-	"grps/pkg/proto"
-	pb "grps/pkg/proto"
+	pb "grpc/pkg/proto"
 
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/eventlog"
@@ -35,7 +34,7 @@ func new(name, address string) (*MetricsService, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn := proto.NewMetricsCollectorClient(client)
+	conn := pb.NewMetricsCollectorClient(client)
 
 	eventlog.InstallAsEventCreate(name, eventlog.Error|eventlog.Info|eventlog.Warning)
 	elog, err := eventlog.Open(name)

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package metrics;
+
+option go_package = "github.com/ZoraNeZmot/metrics-monitor/proto";
+
+message MetricPayload {
+    string agent_id = 1;
+    int64 timestamp = 2;
+    double cpu_usage_percent = 3;
+    double memory_usage_percent = 4;
+    double packet_loss_percent = 5;
+}
+
+message Ack {
+    bool success = 1;
+}
+
+service MetricsCollector {
+    rpc StreamMetrics (stream MetricPayload) returns (Ack);
+}

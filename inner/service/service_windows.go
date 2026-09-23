@@ -1,8 +1,13 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	pb "grpc/pkg/proto"
+	"io"
+	"os"
+	"time"
 
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/eventlog"
@@ -58,6 +63,9 @@ func (ms *MetricsService) Execute(args []string, r <-chan svc.ChangeRequest, cha
 	changes <- svc.Status{State: svc.Running, Accepts: accepts}
 	//start main event loop
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go ms.Stream(ctx)
 	for c := range r {
 		switch c.Cmd {
 		case svc.Stop, svc.Shutdown:
@@ -69,4 +77,36 @@ func (ms *MetricsService) Execute(args []string, r <-chan svc.ChangeRequest, cha
 	}
 
 	return
+}
+
+func mockMetrics(addr string) *pb.MetricPayload {
+	return nil
+}
+
+func (ms *MetricsService) Stream(ctx context.Context) {
+	stream, err := ms.conn.StreamMetrics(ctx)
+	if err != nil {
+		ms.elog.Error(1, "Failed to initiate stream: "+err.Error())
+		return
+	}
+	ticker := time.NewTicker(10 * time.Second)
+
+	for {
+		select {
+		case <-ticker.C:
+			m := mockMetrics(os.Getenv("ADDR")) //TODO
+			err := stream.Send(m)
+			if err != nil {
+				return
+			}
+		case <-ctx.Done():
+			ack, err := stream.CloseAndRecv()
+			if err != nil && !errors.Is(err, io.EOF) {
+				ms.elog.Error(1, "Error receiving final Ack: "+err.Error())
+			} else if ack != nil {
+				ms.elog.Info(1, fmt.Sprintf("Stream closed cleanly. Server Ack success: %s", ack.Success))
+			}
+			return
+		}
+	}
 }

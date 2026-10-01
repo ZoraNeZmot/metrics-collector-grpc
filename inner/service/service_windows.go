@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"grpc/pkg/metrics"
 	pb "grpc/pkg/proto"
 	"io"
-	"os"
 	"time"
 
 	"golang.org/x/sys/windows/svc"
@@ -79,10 +79,6 @@ func (ms *MetricsService) Execute(args []string, r <-chan svc.ChangeRequest, cha
 	return
 }
 
-func mockMetrics(addr string) *pb.MetricPayload {
-	return nil
-}
-
 func (ms *MetricsService) Stream(ctx context.Context) {
 	stream, err := ms.conn.StreamMetrics(ctx)
 	if err != nil {
@@ -94,8 +90,11 @@ func (ms *MetricsService) Stream(ctx context.Context) {
 	for {
 		select {
 		case <-ticker.C:
-			m := mockMetrics(os.Getenv("ADDR")) //TODO
-			err := stream.Send(m)
+			m, err := metrics.GetMetrics("192.168.0.1")
+			if err != nil {
+				return
+			}
+			err = stream.Send(m)
 			if err != nil {
 				return
 			}
@@ -104,7 +103,7 @@ func (ms *MetricsService) Stream(ctx context.Context) {
 			if err != nil && !errors.Is(err, io.EOF) {
 				ms.elog.Error(1, "Error receiving final Ack: "+err.Error())
 			} else if ack != nil {
-				ms.elog.Info(1, fmt.Sprintf("Stream closed cleanly. Server Ack success: %s", ack.Success))
+				ms.elog.Info(1, fmt.Sprintf("Stream closed cleanly. Server Ack success: %v", ack.Success))
 			}
 			return
 		}

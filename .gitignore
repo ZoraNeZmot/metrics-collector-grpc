@@ -7,5 +7,3 @@ bin
 
 .vscode
 metrics_aggregator_plan.md
-*.mod
-*.sum

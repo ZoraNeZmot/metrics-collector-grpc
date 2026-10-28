@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"grps/pkg/proto"
-	pb "grps/pkg/proto"
+	"grpc/pkg/proto"
+	pb "grpc/pkg/proto"
 
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/eventlog"

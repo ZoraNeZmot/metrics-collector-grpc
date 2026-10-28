@@ -6,6 +6,6 @@ bin
 *.log
 
 .vscode
-*.md
+metrics_aggregator_plan.md
 *.mod
 *.sum

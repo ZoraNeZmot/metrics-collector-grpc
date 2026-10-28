@@ -1,7 +1,7 @@
 package main
 
 import (
-	"grps/inner/service"
+	"grpc/inner/service"
 	"log"
 )
 

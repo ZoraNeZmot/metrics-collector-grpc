@@ -2,8 +2,7 @@ package service
 
 import (
 	"errors"
-	"grps/pkg/proto"
-	pb "grps/pkg/proto"
+	"grpc/pkg/proto"
 
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/eventlog"
@@ -47,7 +46,7 @@ func new(name, address string) (*MetricsService, error) {
 }
 
 type MetricsService struct {
-	conn pb.MetricsCollectorClient
+	conn proto.MetricsCollectorClient
 	elog *eventlog.Log
 }
 

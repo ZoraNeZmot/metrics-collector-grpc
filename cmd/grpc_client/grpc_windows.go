@@ -5,8 +5,10 @@ import (
 	"log"
 )
 
+const addr = "192.168.0.1"
+
 func main() {
-	err := service.CreateAndStartService("GRPs", "localhost:50051")
+	err := service.CreateAndStartService("gRPC", "localhost:50051")
 	if err != nil {
 		log.Fatalf("Failed to start process %v", err)
 	}
